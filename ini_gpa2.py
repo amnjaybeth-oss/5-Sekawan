@@ -8,6 +8,7 @@ from tkinter import ttk, messagebox
 SKS_MIN, SKS_MAX = 1, 6
 SCORE_MIN, SCORE_MAX = 0, 100
 SEM_MIN, SEM_MAX = 1, 14
+<<<<<<< HEAD
 MAX_TEXT_LENGTH = 50
 
 GRADE_TABLE = [
@@ -21,3 +22,6 @@ GRADE_TABLE = [
     ("D", 40, 1.0),
     ("E", 0, 0.0),
 ]
+=======
+MAX_TEXT_LENGTH = 50
+>>>>>>> 2e44d0a6bff7d0bbc70d0ec9159941bae56c7a93
