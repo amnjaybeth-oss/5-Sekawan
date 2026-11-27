@@ -160,3 +160,12 @@ class CourseFactory:
         if course_class is None:
             raise ValidationError(f"Unknown course type: {kind}")
         return course_class(name, sks, score, semester)
+
+
+        class Person:
+    def __init__(self, name=None, npm=None):
+        self.name = name
+        self.npm = npm
+
+    def __str__(self):
+        return self.name or "Student"
