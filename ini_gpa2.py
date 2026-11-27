@@ -531,7 +531,7 @@ def build_table(parent, headers, rows, weights):
         tk.Frame(parent, bg=BORDER, height=1).grid(
             row=grid_row + 1, column=0, columnspan=len(headers), sticky="ew")
         grid_row += 2
-        
+
 class CourseDialog(tk.Toplevel):
     def __init__(self, parent, on_save, course=None):
         super().__init__(parent, bg=WHITE)
@@ -548,3 +548,26 @@ class CourseDialog(tk.Toplevel):
         self.e_sks = add_field(body, f"SKS ({SKS_MIN}-{SKS_MAX})", course.sks if course else "", width=12)
         self.e_score = add_field(body, f"Score ({SCORE_MIN}-{SCORE_MAX})", f"{course.score:g}" if course else "", width=12)
         self.e_sem = add_field(body, f"Semester ({SEM_MIN}-{SEM_MAX})", course.semester if course else 1, width=12)
+
+        tk.Label(body, text="Type", font=font(9, True), bg=WHITE, fg=MUTED).pack(anchor="w", pady=(10, 4))
+        self.cb_kind = ttk.Combobox(body, state="readonly", width=12, font=font(11),
+                                    values=CourseFactory.kinds())
+        self.cb_kind.set(course.kind if course else "Regular")
+        self.cb_kind.pack(anchor="w", ipady=4)
+        self.cb_kind.bind("<MouseWheel>", lambda e: "break")
+
+        self.error = tk.Label(body, text="", font=font(9), bg=WHITE, fg=DANGER,
+                              wraplength=320, justify="left")
+        self.error.pack(anchor="w", pady=(12, 0))
+
+        buttons = tk.Frame(body, bg=WHITE)
+        buttons.pack(fill="x", pady=(14, 0))
+        FlatButton(buttons, "Save", self._save).pack(side="right")
+        FlatButton(buttons, "Cancel", self.destroy, primary=False).pack(side="right", padx=(0, 10))
+
+        self.bind("<Return>", lambda e: self._save())
+        self.bind("<Escape>", lambda e: self.destroy())
+        self.transient(parent.winfo_toplevel())
+        self.wait_visibility()
+        self.grab_set()
+        self.e_name.focus_set()
