@@ -24,3 +24,6 @@ GRADE_TABLE = [
 
 class ValidationError(ValueError):
     pass
+
+class AuthError(Exception):
+    pass
