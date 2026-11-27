@@ -108,3 +108,36 @@ class GPACalculator:
             return 0.0
         sks, semester_gpa = items[index]
         return sks * semester_gpa + self._weighted_total(items, index + 1)
+
+@dataclass(frozen=True)
+class PlanResult:
+    target: str
+    minimum: int
+    needed: float
+    outcome: str
+
+    @property
+    def shown(self):
+        return math.ceil(self.needed * 10) / 10
+
+
+class FinalExamPlanner:
+    def __init__(self, scale):
+        self.scale = scale
+
+    def required_score(self, current_score, final_weight_percent, target_letter):
+        if not 0 < final_weight_percent <= 100:
+            raise ValidationError("Final exam weight must be between 1 and 100.")
+        weight = final_weight_percent / 100
+        target = self.scale.minimum_score(target_letter)
+        return (target - current_score * (1 - weight)) / weight
+
+    def plan(self, current_score, final_weight_percent, target_letter):
+        needed = self.required_score(current_score, final_weight_percent, target_letter)
+        if needed > 100:
+            outcome = "unreachable"
+        elif needed <= 0:
+            outcome = "secured"
+        else:
+            outcome = "reachable"
+        return PlanResult(target_letter, self.scale.minimum_score(target_letter), needed, outcome)
