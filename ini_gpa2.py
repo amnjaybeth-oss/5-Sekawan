@@ -531,3 +531,20 @@ def build_table(parent, headers, rows, weights):
         tk.Frame(parent, bg=BORDER, height=1).grid(
             row=grid_row + 1, column=0, columnspan=len(headers), sticky="ew")
         grid_row += 2
+        
+class CourseDialog(tk.Toplevel):
+    def __init__(self, parent, on_save, course=None):
+        super().__init__(parent, bg=WHITE)
+        self.title("Edit Course" if course else "Add Course")
+        self.resizable(False, False)
+        self._on_save = on_save
+
+        body = tk.Frame(self, bg=WHITE, padx=28, pady=24)
+        body.pack()
+        tk.Label(body, text="Edit Course" if course else "Add Course",
+                 font=font(15, True), bg=WHITE, fg=TEXT).pack(anchor="w")
+
+        self.e_name = add_field(body, "Course name", course.name if course else "")
+        self.e_sks = add_field(body, f"SKS ({SKS_MIN}-{SKS_MAX})", course.sks if course else "", width=12)
+        self.e_score = add_field(body, f"Score ({SCORE_MIN}-{SCORE_MAX})", f"{course.score:g}" if course else "", width=12)
+        self.e_sem = add_field(body, f"Semester ({SEM_MIN}-{SEM_MAX})", course.semester if course else 1, width=12)
