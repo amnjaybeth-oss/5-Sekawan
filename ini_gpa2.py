@@ -328,3 +328,29 @@ class Student(Person):
                 self._calculator.cumulative(history) if has_data else None,
             ))
         return reports
+
+class StudentRepository:
+    DEMO_COURSES = [
+        ("Regular", "Algoritma dan Pemrograman", 3, 88, 1),
+        ("Regular", "Basis Data", 3, 78, 1),
+        ("Regular", "Kalkulus", 4, 72, 1),
+        ("Regular", "Pemrograman Web", 3, 82, 1),
+    ]
+
+    def __init__(self):
+        self._students = {}
+
+    def find(self, npm):
+        return self._students.get(npm)
+
+    def name_used_by_other_npm(self, name, npm):
+        return any(s.name == name and s.npm != npm for s in self._students.values())
+
+    def get_or_create(self, name, npm):
+        student = self._students.get(npm)
+        if student is None:
+            student = Student(name, npm)
+            for kind, course_name, sks, score, semester in self.DEMO_COURSES:
+                student.add_course(CourseFactory.create(kind, course_name, sks, score, semester))
+            self._students[npm] = student
+        return student
