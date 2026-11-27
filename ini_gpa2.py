@@ -141,3 +141,22 @@ class FinalExamPlanner:
         else:
             outcome = "reachable"
         return PlanResult(target_letter, self.scale.minimum_score(target_letter), needed, outcome)
+
+class CourseFactory:
+    types = {}
+
+    @classmethod
+    def register(cls, course_class):
+        cls.types[course_class.kind] = course_class
+        return course_class
+
+    @classmethod
+    def kinds(cls):
+        return list(cls.types)
+
+    @classmethod
+    def create(cls, kind, name, sks, score, semester=1):
+        course_class = cls.types.get(kind)
+        if course_class is None:
+            raise ValidationError(f"Unknown course type: {kind}")
+        return course_class(name, sks, score, semester)
