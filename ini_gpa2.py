@@ -27,3 +27,46 @@ class ValidationError(ValueError):
 
 class AuthError(Exception):
     pass
+
+class Validator:
+    @staticmethod
+    def check_range(number, field_name, minimum=None, maximum=None):
+        if minimum is not None and number < minimum:
+            raise ValidationError(f"{field_name} must be at least {minimum:g}.")
+        if maximum is not None and number > maximum:
+            raise ValidationError(f"{field_name} must be at most {maximum:g}.")
+
+    @staticmethod
+    def text(value, field_name, max_length=MAX_TEXT_LENGTH):
+        text = str(value).strip()
+        if not text:
+            raise ValidationError(f"{field_name} cannot be empty.")
+        if len(text) > max_length:
+            raise ValidationError(f"{field_name} is too long (max {max_length} characters).")
+        return text
+
+    @staticmethod
+    def integer(value, field_name, minimum=None, maximum=None):
+        text = str(value).strip()
+        if not text:
+            raise ValidationError(f"{field_name} cannot be empty.")
+        try:
+            number = int(text)
+        except ValueError:
+            raise ValidationError(f"{field_name} must be a whole number (example: 3).")
+        Validator.check_range(number, field_name, minimum, maximum)
+        return number
+
+    @staticmethod
+    def number(value, field_name, minimum=None, maximum=None):
+        text = str(value).strip().replace(",", ".")
+        if not text:
+            raise ValidationError(f"{field_name} cannot be empty.")
+        try:
+            number = float(text)
+        except ValueError:
+            raise ValidationError(f"{field_name} must be a number (example: 78.5).")
+        if math.isnan(number) or math.isinf(number):
+            raise ValidationError(f"{field_name} must be a real number.")
+        Validator.check_range(number, field_name, minimum, maximum)
+        return number
