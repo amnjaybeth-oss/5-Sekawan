@@ -571,3 +571,15 @@ class CourseDialog(tk.Toplevel):
         self.wait_visibility()
         self.grab_set()
         self.e_name.focus_set()
+
+        def _save(self):
+        try:
+            name = Validator.text(self.e_name.get(), "Course name")
+            sks = Validator.integer(self.e_sks.get(), "SKS", SKS_MIN, SKS_MAX)
+            score = Validator.number(self.e_score.get(), "Score", SCORE_MIN, SCORE_MAX)
+            semester = Validator.integer(self.e_sem.get(), "Semester", SEM_MIN, SEM_MAX)
+            self._on_save(name, sks, score, semester, self.cb_kind.get())
+        except (ValueError, TypeError) as err:
+            self.error.config(text=str(err))
+            return
+        self.destroy()
