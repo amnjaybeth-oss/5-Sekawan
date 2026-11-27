@@ -21,3 +21,6 @@ GRADE_TABLE = [
     ("D", 40, 1.0),
     ("E", 0, 0.0),
 ]
+
+class ValidationError(ValueError):
+    pass
