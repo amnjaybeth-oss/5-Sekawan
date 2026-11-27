@@ -496,3 +496,38 @@ def add_field(parent, label, value="", width=32, bg=WHITE):
     if value != "":
         entry.insert(0, value)
     return entry
+
+def build_table(parent, headers, rows, weights):
+    for col, weight in enumerate(weights):
+        parent.grid_columnconfigure(col, weight=weight)
+    for col, header in enumerate(headers):
+        tk.Label(parent, text=header, font=font(9, True), bg=WHITE, fg=MUTED).grid(
+            row=0, column=col, sticky="w", pady=(0, 10))
+    tk.Frame(parent, bg=BORDER, height=1).grid(row=1, column=0, columnspan=len(headers), sticky="ew")
+
+    if not rows:
+        tk.Label(parent, text="No data yet.", font=font(10), bg=WHITE, fg=MUTED).grid(
+            row=2, column=0, columnspan=len(headers), sticky="w", pady=16)
+        return
+
+    grid_row = 2
+    for row in rows:
+        for col, cell in enumerate(row):
+            if isinstance(cell, tuple) and cell[0] == "pill":
+                widget = grade_pill(parent, cell[1])
+            elif isinstance(cell, tuple) and cell[0] == "status":
+                widget = tk.Label(parent, text=cell[1], font=font(11), bg=WHITE,
+                                  fg=TEXT if cell[1] == "Passed" else DANGER)
+            elif isinstance(cell, tuple) and cell[0] == "actions":
+                widget = tk.Frame(parent, bg=WHITE)
+                for text, action in cell[1]:
+                    link = tk.Label(widget, text=text, font=font(10, True), bg=WHITE,
+                                    fg=DANGER if text == "Delete" else BLUE, cursor="hand2")
+                    link.pack(side="left", padx=(0, 14))
+                    link.bind("<Button-1>", lambda e, fn=action: fn())
+            else:
+                widget = tk.Label(parent, text=cell, font=font(11), bg=WHITE, fg=TEXT)
+            widget.grid(row=grid_row, column=col, sticky="w", pady=13)
+        tk.Frame(parent, bg=BORDER, height=1).grid(
+            row=grid_row + 1, column=0, columnspan=len(headers), sticky="ew")
+        grid_row += 2
