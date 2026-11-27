@@ -937,3 +937,34 @@ class App(tk.Tk):
     def report_callback_exception(self, exc_type, exc_value, exc_tb):
         traceback.print_exception(exc_type, exc_value, exc_tb)
         messagebox.showerror("Unexpected error", f"{exc_type.__name__}: {exc_value}")
+
+        def _clear_window(self):
+                for child in self.winfo_children():
+                    child.destroy()
+        
+            def show_login(self):
+                self._clear_window()
+                self.title("Student Login - GPA Planner")
+                LoginScreen(self, self).pack(fill="both", expand=True)
+        
+            def show_main(self, attempt):
+                self.student = self.auth.login(attempt)
+                self._clear_window()
+                self.title("GPA Planner")
+                self.shell = Shell(self, self)
+                self.shell.pack(fill="both", expand=True)
+        
+            def open_course_dialog(self, course=None):
+                def save(name, sks, score, semester, kind):
+                    new_course = CourseFactory.create(kind, name, sks, score, semester)
+                    if course is None:
+                        self.student.add_course(new_course)
+                    else:
+                        self.student.replace_course(course, new_course)
+                    self.shell.refresh()
+        
+                CourseDialog(self, save, course)
+        
+        
+        if __name__ == "__main__":
+            App().mainloop()
