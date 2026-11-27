@@ -249,3 +249,82 @@ class LabCourse(Course):
 
     def describe(self):
         return f"{self.name} - lab/practicum, {self.sks} SKS (pass score {self.passing_score})"
+
+class Semester:
+    def __init__(self, number, courses, calculator):
+        self.number = number
+        self.courses = list(courses)
+        self._calculator = calculator
+
+    @property
+    def total_sks(self):
+        return sum(c.sks for c in self.courses)
+
+    @property
+    def gpa(self):
+        return self._calculator.gpa(self.courses)
+
+@dataclass(frozen=True)
+class SemesterReport:
+    number: int
+    total_sks: int
+    gpa: float | None
+    cumulative_gpa: float | None
+
+
+class Student(Person):
+    def __init__(self, name=None, npm=None, calculator=None):
+        super().__init__(name, npm)
+        self._courses = []
+        self._calculator = calculator or GPACalculator()
+
+    @property
+    def courses(self):
+        return list(self._courses)
+
+    def add_course(self, course):
+        if not isinstance(course, Course):
+            raise TypeError("Only Course objects can be added.")
+        self._courses.append(course)
+
+    def remove_course(self, course):
+        if course not in self._courses:
+            raise ValidationError("Course was not found.")
+        self._courses.remove(course)
+
+    def replace_course(self, old, new):
+        if old not in self._courses:
+            raise ValidationError("Course to replace was not found.")
+        if not isinstance(new, Course):
+            raise TypeError("Replacement must be a Course object.")
+        self._courses[self._courses.index(old)] = new
+
+    def semesters(self):
+        return sorted({c.semester for c in self._courses})
+
+    def courses_in(self, semester):
+        return [c for c in self._courses if c.semester == semester]
+
+    def semester_objects(self):
+        numbers = self.semesters()
+        last = numbers[-1] if numbers else 0
+        return [Semester(n, self.courses_in(n), self._calculator) for n in range(1, last + 1)]
+
+    def total_sks(self):
+        return sum(c.sks for c in self._courses)
+
+    def gpa(self):
+        return self._calculator.gpa(self._courses)
+
+    def semester_report(self):
+        history, reports = [], []
+        for sem in self.semester_objects():
+            history.append((sem.total_sks, sem.gpa))
+            has_data = sum(sks for sks, _ in history) > 0
+            reports.append(SemesterReport(
+                sem.number,
+                sem.total_sks,
+                sem.gpa if sem.total_sks else None,
+                self._calculator.cumulative(history) if has_data else None,
+            ))
+        return reports
