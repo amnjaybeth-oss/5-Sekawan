@@ -621,3 +621,41 @@ class BasePage(tk.Frame):
         tk.Label(parent, text=title, font=font(24, True), bg=BG, fg=TEXT).pack(anchor="w")
         if subtitle:
             tk.Label(parent, text=subtitle, font=font(11), bg=BG, fg=MUTED).pack(anchor="w")
+
+class HomePage(BasePage):
+    def build(self):
+        box = self.container()
+        title = f"Hi, {self.student.name}!" if self.student.name else "Summary"
+        self.heading(box, title, "Here is a summary of your semester.")
+
+        stats = tk.Frame(box, bg=BG)
+        stats.pack(fill="x", pady=(18, 18))
+        for i in range(3):
+            stats.grid_columnconfigure(i, weight=1, uniform="stat")
+        self._stat(stats, 0, "Your GPA", f"{self.student.gpa():.2f}", highlight=True)
+        self._stat(stats, 1, "Total SKS", str(self.student.total_sks()))
+        self._stat(stats, 2, "Courses", str(len(self.student.courses)))
+
+        card = make_card(box)
+        card.pack(fill="both", expand=True)
+        inner = tk.Frame(card, bg=WHITE, padx=24, pady=22)
+        inner.pack(fill="both", expand=True)
+        head = tk.Frame(inner, bg=WHITE)
+        head.pack(fill="x", pady=(0, 16))
+        tk.Label(head, text="My Courses", font=font(14, True), bg=WHITE, fg=TEXT).pack(side="left")
+        FlatButton(head, "Add Course", self.app.open_course_dialog).pack(side="right")
+
+        table = tk.Frame(inner, bg=WHITE)
+        table.pack(fill="x")
+        rows = [[c.name, str(c.sks), f"{c.score:g}", ("pill", c.letter)] for c in self.student.courses]
+        build_table(table, ["Course", "SKS", "Score", "Grade"], rows, [5, 2, 2, 2])
+
+    def _stat(self, parent, col, label, value, highlight=False):
+        bg = BLUE if highlight else WHITE
+        card = tk.Frame(parent, bg=bg, highlightbackground=BLUE if highlight else BORDER,
+                        highlightthickness=1)
+        card.grid(row=0, column=col, sticky="nsew", padx=(0, 14) if col < 2 else 0)
+        tk.Label(card, text=label, font=font(10, highlight), bg=bg,
+                 fg=WHITE if highlight else MUTED).pack(anchor="w", padx=24, pady=(22, 0))
+        tk.Label(card, text=value, font=font(34, True), bg=bg,
+                 fg=WHITE if highlight else TEXT).pack(anchor="w", padx=24, pady=(4, 22))
