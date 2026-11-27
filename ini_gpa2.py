@@ -659,3 +659,33 @@ class HomePage(BasePage):
                  fg=WHITE if highlight else MUTED).pack(anchor="w", padx=24, pady=(22, 0))
         tk.Label(card, text=value, font=font(34, True), bg=bg,
                  fg=WHITE if highlight else TEXT).pack(anchor="w", padx=24, pady=(4, 22))
+
+class CoursesPage(BasePage):
+    def build(self):
+        box = self.container()
+        top = tk.Frame(box, bg=BG)
+        top.pack(fill="x")
+        left = tk.Frame(top, bg=BG)
+        left.pack(side="left")
+        self.heading(left, "Courses", "Add, edit or remove your courses.")
+        FlatButton(top, "Add Course", self.app.open_course_dialog).pack(side="right", anchor="s")
+
+        card = make_card(box)
+        card.pack(fill="x", pady=(18, 0))
+        table = tk.Frame(card, bg=WHITE, padx=24, pady=20)
+        table.pack(fill="x")
+        rows = []
+        for course in self.student.courses:
+            actions = ("actions", [
+                ("Edit", lambda c=course: self.app.open_course_dialog(c)),
+                ("Delete", lambda c=course: self._delete(c)),
+            ])
+            rows.append([course.name, course.kind, str(course.sks), f"{course.score:g}",
+                         ("pill", course.letter), ("status", course.status()), str(course.semester), actions])
+        build_table(table, ["Course", "Type", "SKS", "Score", "Grade", "Status", "Semester", ""], rows,
+                    [5, 2, 1, 1, 1, 4, 1, 2])
+
+    def _delete(self, course):
+        if messagebox.askyesno("Delete course", f"Delete {course.describe()}?"):
+            self.student.remove_course(course)
+            self.app.shell.refresh()
