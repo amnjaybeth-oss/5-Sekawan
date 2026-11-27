@@ -782,3 +782,73 @@ class GradesPage(BasePage):
                   f"{r.cumulative_gpa:.2f}" if r.cumulative_gpa is not None else "-"]
                  for r in self.student.semester_report()]
         build_table(table2, ["Semester", "SKS", "GPA", "Cumulative GPA"], rows2, [2, 1, 1, 2])
+
+class Shell(tk.Frame):
+    PAGES = [
+        ("home", "Home", HomePage),
+        ("courses", "Courses", CoursesPage),
+        ("planner", "Planner", PlannerPage),
+        ("grades", "Grades", GradesPage),
+    ]
+
+    def __init__(self, parent, app):
+        super().__init__(parent, bg=BG)
+        self.app = app
+        self.current = "home"
+        self.nav_items = {}
+        self._build_navbar()
+
+        self.content = tk.Frame(self, bg=BG)
+        self.content.pack(fill="both", expand=True)
+        self.content.grid_rowconfigure(0, weight=1)
+        self.content.grid_columnconfigure(0, weight=1)
+        self.pages = {}
+        for key, _, page_class in self.PAGES:
+            page = page_class(self.content, app)
+            page.grid(row=0, column=0, sticky="nsew")
+            self.pages[key] = page
+        self.show("home")
+
+    def _build_navbar(self):
+        bar = tk.Frame(self, bg=WHITE)
+        bar.pack(fill="x")
+        inner = tk.Frame(bar, bg=WHITE)
+        inner.pack(fill="x", padx=60, pady=14)
+
+        self.logo_img = load_logo(36)
+        if self.logo_img:
+            tk.Label(inner, image=self.logo_img, bg=WHITE).pack(side="left")
+        else:
+            tk.Label(inner, text="GP", font=font(11, True), bg=BLUE, fg=WHITE,
+                     width=3, pady=6).pack(side="left")
+        tk.Label(inner, text="GPA Planner", font=font(13, True), bg=WHITE, fg=TEXT).pack(side="left", padx=(10, 24))
+
+        for key, label, _ in self.PAGES:
+            item = tk.Label(inner, text=label, font=font(10, True), bg=WHITE, fg=MUTED,
+                            padx=16, pady=8, cursor="hand2")
+            item.pack(side="left", padx=2)
+            item.bind("<Button-1>", lambda e, k=key: self.show(k))
+            self.nav_items[key] = item
+
+        FlatButton(inner, "Logout", self.app.show_login, primary=False).pack(side="right")
+
+        if self.app.student.name:
+            info = tk.Frame(inner, bg=WHITE)
+            info.pack(side="right", padx=(0, 14))
+            tk.Label(info, text=self.app.student.name, font=font(10, True), bg=WHITE, fg=TEXT).pack(anchor="e")
+            if self.app.student.npm:
+                tk.Label(info, text=f"NPM {self.app.student.npm}", font=font(9), bg=WHITE, fg=MUTED).pack(anchor="e")
+
+        tk.Frame(self, bg=BORDER, height=1).pack(fill="x")
+
+    def show(self, key):
+        self.current = key
+        for k, item in self.nav_items.items():
+            active = k == key
+            item.config(bg=BLUE_SOFT if active else WHITE, fg=BLUE_DARK if active else MUTED)
+        page = self.pages[key]
+        page.refresh()
+        page.tkraise()
+
+    def refresh(self):
+        self.pages[self.current].refresh(keep_scroll=True)
