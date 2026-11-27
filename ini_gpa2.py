@@ -689,3 +689,39 @@ class CoursesPage(BasePage):
         if messagebox.askyesno("Delete course", f"Delete {course.describe()}?"):
             self.student.remove_course(course)
             self.app.shell.refresh()
+
+class PlannerPage(BasePage):
+    def build(self):
+        box = self.container()
+        self.heading(box, "Planner", "Find the final exam score you need for a target grade.")
+
+        card = make_card(box)
+        card.pack(fill="x", pady=(18, 0))
+        inner = tk.Frame(card, bg=WHITE, padx=28, pady=24)
+        inner.pack(fill="x")
+        tk.Label(inner, text="What do I need?", font=font(14, True), bg=WHITE, fg=TEXT).pack(anchor="w")
+
+        form = tk.Frame(inner, bg=WHITE)
+        form.pack(anchor="w", pady=(4, 0))
+        col1 = tk.Frame(form, bg=WHITE)
+        col1.grid(row=0, column=0, padx=(0, 24), sticky="n")
+        col2 = tk.Frame(form, bg=WHITE)
+        col2.grid(row=0, column=1, padx=(0, 24), sticky="n")
+        col3 = tk.Frame(form, bg=WHITE)
+        col3.grid(row=0, column=2, sticky="n")
+
+        self.e_current = add_field(col1, "Score so far, before the final exam (0-100)", width=30)
+        self.e_weight = add_field(col2, "Final exam weight (%)", "40", width=22)
+        tk.Label(col3, text="Target grade", font=font(9, True), bg=WHITE, fg=MUTED).pack(anchor="w", pady=(10, 4))
+        self.cb_target = ttk.Combobox(col3, state="readonly", width=8, font=font(11),
+                                      values=self.app.scale.target_letters())
+        self.cb_target.set("A")
+        self.cb_target.pack(anchor="w", ipady=4)
+        self.cb_target.bind("<MouseWheel>", lambda e: "break")
+
+        FlatButton(inner, "Calculate", self._calculate).pack(anchor="w", pady=(20, 0))
+        self.result = tk.Label(inner, text="", font=font(22, True), bg=WHITE, fg=TEXT)
+        self.result.pack(anchor="w", pady=(20, 0))
+        self.detail = tk.Label(inner, text="", font=font(10), bg=WHITE, fg=MUTED,
+                               wraplength=640, justify="left")
+        self.detail.pack(anchor="w", pady=(2, 0))
