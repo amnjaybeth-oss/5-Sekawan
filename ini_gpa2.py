@@ -354,3 +354,37 @@ class StudentRepository:
                 student.add_course(CourseFactory.create(kind, course_name, sks, score, semester))
             self._students[npm] = student
         return student
+
+@dataclass(frozen=True)
+class LoginAttempt:
+    name: str
+    npm: str
+    needs_confirmation: bool
+
+class AuthService:
+    NPM_LENGTH = 7
+
+    def __init__(self, repository):
+        self._repo = repository
+
+    def check(self, raw_name, raw_npm):
+        name = Validator.text(raw_name, "Name", max_length=60)
+        npm = Validator.text(raw_npm, "NPM", max_length=self.NPM_LENGTH)
+        if not all(c.isalpha() or c in " .'-" for c in name):
+            raise ValidationError(
+                "Name may contain letters, spaces, periods, apostrophes, or hyphens only.")
+        if not any(c.isalpha() for c in name):
+            raise ValidationError("Name must contain at least one letter.")
+        if not npm.isdigit():
+            raise ValidationError("NPM must contain numbers only.")
+        if len(npm) != self.NPM_LENGTH:
+            raise ValidationError(f"NPM must contain exactly {self.NPM_LENGTH} digits.")
+
+        name = name.title()
+        registered = self._repo.find(npm)
+        if registered and registered.name != name:
+            raise AuthError("The name you entered does not match the registered NPM.")
+        return LoginAttempt(name, npm, self._repo.name_used_by_other_npm(name, npm))
+
+    def login(self, attempt):
+        return self._repo.get_or_create(attempt.name, attempt.npm)
