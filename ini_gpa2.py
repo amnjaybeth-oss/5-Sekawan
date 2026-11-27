@@ -70,3 +70,41 @@ class Validator:
             raise ValidationError(f"{field_name} must be a real number.")
         Validator.check_range(number, field_name, minimum, maximum)
         return number
+
+    class GradeScale:
+    def __init__(self, table=GRADE_TABLE):
+        self.table = list(table)
+
+    def score_to_grade(self, score):
+        for letter, minimum, points in self.table:
+            if score >= minimum:
+                return letter, points
+        return "E", 0.0
+
+    def minimum_score(self, letter):
+        for grade, minimum, _ in self.table:
+            if grade == letter:
+                return minimum
+        raise ValidationError(f"Unknown grade: {letter}")
+
+    def target_letters(self):
+        return [letter for letter, _, _ in self.table if letter != "E"]
+
+class GPACalculator:
+    def gpa(self, courses):
+        total_sks = sum(c.sks for c in courses)
+        if total_sks == 0:
+            return 0.0
+        return sum(c.sks * c.points for c in courses) / total_sks
+
+    def cumulative(self, items):
+        total_sks = sum(sks for sks, _ in items)
+        if total_sks == 0:
+            return 0.0
+        return self._weighted_total(items) / total_sks
+
+    def _weighted_total(self, items, index=0):
+        if index >= len(items):
+            return 0.0
+        sks, semester_gpa = items[index]
+        return sks * semester_gpa + self._weighted_total(items, index + 1)
