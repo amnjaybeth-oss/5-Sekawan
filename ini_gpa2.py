@@ -427,7 +427,7 @@ def load_logo(size):
     except Exception:
         return None
 
-    class FlatButton(tk.Label):
+class FlatButton(tk.Label):
     def __init__(self, parent, text, command, primary=True):
         self._on_click = command
         self._bg_normal = BLUE if primary else WHITE
@@ -443,7 +443,7 @@ def load_logo(size):
         self.bind("<Enter>", lambda e: self.config(bg=self._bg_hover))
         self.bind("<Leave>", lambda e: self.config(bg=self._bg_normal))
 
-        class ScrollFrame(tk.Frame):
+class ScrollFrame(tk.Frame):
     def __init__(self, parent):
         super().__init__(parent, bg=BG)
         self.canvas = tk.Canvas(self, bg=BG, highlightthickness=0, yscrollincrement=30)
@@ -463,7 +463,7 @@ def load_logo(size):
 
     def _fit(self, event=None):
         self.canvas.itemconfig(self.window, width=self.canvas.winfo_width())
-        self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+        self.canvas.configure(scrol lregion=self.canvas.bbox("all"))
 
     def _move(self, step):
         if not self.canvas.winfo_exists():
@@ -473,3 +473,26 @@ def load_logo(size):
         if self.inner.winfo_height() <= self.canvas.winfo_height():
             return
         self.canvas.yview_scroll(step, "units")
+
+def make_card(parent, bg=WHITE):
+    return tk.Frame(parent, bg=bg, highlightbackground=BORDER, highlightthickness=1)
+
+def grade_pill(parent, letter):
+    strong = letter in ("A", "A-")
+    return tk.Label(
+        parent, text=letter, font=font(9, True), padx=10, pady=3,
+        bg=BLUE_SOFT if strong else PILL_GRAY,
+        fg=BLUE_DARK if strong else "#334155",
+    )
+
+def add_field(parent, label, value="", width=32, bg=WHITE):
+    tk.Label(parent, text=label, font=font(9, True), bg=bg, fg=MUTED).pack(anchor="w", pady=(10, 4))
+    entry = tk.Entry(
+        parent, width=width, font=font(11), relief="flat", bg=WHITE, fg=TEXT,
+        insertbackground=TEXT, highlightthickness=1,
+        highlightbackground=BORDER, highlightcolor=BLUE,
+    )
+    entry.pack(anchor="w", ipady=6)
+    if value != "":
+        entry.insert(0, value)
+    return entry
