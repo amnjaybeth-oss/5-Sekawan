@@ -442,3 +442,34 @@ def load_logo(size):
         self.bind("<Button-1>", lambda e: self._on_click())
         self.bind("<Enter>", lambda e: self.config(bg=self._bg_hover))
         self.bind("<Leave>", lambda e: self.config(bg=self._bg_normal))
+
+        class ScrollFrame(tk.Frame):
+    def __init__(self, parent):
+        super().__init__(parent, bg=BG)
+        self.canvas = tk.Canvas(self, bg=BG, highlightthickness=0, yscrollincrement=30)
+        bar = ttk.Scrollbar(self, orient="vertical", command=self.canvas.yview)
+        self.inner = tk.Frame(self.canvas, bg=BG)
+        self.window = self.canvas.create_window((0, 0), window=self.inner, anchor="nw")
+        self.canvas.configure(yscrollcommand=bar.set)
+        self.canvas.pack(side="left", fill="both", expand=True)
+        bar.pack(side="right", fill="y")
+
+        self.canvas.bind("<Configure>", self._fit)
+        self.inner.bind("<Configure>", self._fit)
+
+        self.canvas.bind_all("<MouseWheel>", lambda e: self._move(-1 if e.delta > 0 else 1))
+        self.canvas.bind_all("<Button-4>", lambda e: self._move(-1))
+        self.canvas.bind_all("<Button-5>", lambda e: self._move(1))
+
+    def _fit(self, event=None):
+        self.canvas.itemconfig(self.window, width=self.canvas.winfo_width())
+        self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+
+    def _move(self, step):
+        if not self.canvas.winfo_exists():
+            return
+        if self.canvas.grab_current() is not None:
+            return
+        if self.inner.winfo_height() <= self.canvas.winfo_height():
+            return
+        self.canvas.yview_scroll(step, "units")
