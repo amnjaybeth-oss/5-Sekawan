@@ -426,3 +426,19 @@ def load_logo(size):
             return None
     except Exception:
         return None
+
+    class FlatButton(tk.Label):
+    def __init__(self, parent, text, command, primary=True):
+        self._on_click = command
+        self._bg_normal = BLUE if primary else WHITE
+        self._bg_hover = BLUE_HOVER if primary else BG
+        super().__init__(
+            parent, text=text, bg=self._bg_normal,
+            fg=WHITE if primary else TEXT,
+            font=font(10, True), padx=18, pady=9, cursor="hand2",
+            highlightthickness=1,
+            highlightbackground=BLUE if primary else BORDER,
+        )
+        self.bind("<Button-1>", lambda e: self._on_click())
+        self.bind("<Enter>", lambda e: self.config(bg=self._bg_hover))
+        self.bind("<Leave>", lambda e: self.config(bg=self._bg_normal))
