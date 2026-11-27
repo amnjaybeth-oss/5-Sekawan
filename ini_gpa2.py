@@ -748,3 +748,37 @@ class PlannerPage(BasePage):
         else:
             self.result.config(text=f"{plan.shown:.1f}", fg=BLUE)
             self.detail.config(fg=MUTED, text=f"Score needed on the final exam to get {plan.target} (minimum total {plan.minimum}).")
+
+class GradesPage(BasePage):
+    def build(self):
+        box = self.container()
+        self.heading(box, "Grades", "Grade conversion and your GPA per semester.")
+
+        grid = tk.Frame(box, bg=BG)
+        grid.pack(fill="x", pady=(18, 0))
+        grid.grid_columnconfigure(0, weight=2, uniform="g")
+        grid.grid_columnconfigure(1, weight=3, uniform="g")
+
+        left = make_card(grid)
+        left.grid(row=0, column=0, sticky="nsew", padx=(0, 14))
+        left_in = tk.Frame(left, bg=WHITE, padx=24, pady=22)
+        left_in.pack(fill="both", expand=True)
+        tk.Label(left_in, text="Grade Conversion", font=font(14, True), bg=WHITE, fg=TEXT).pack(anchor="w", pady=(0, 14))
+        table1 = tk.Frame(left_in, bg=WHITE)
+        table1.pack(fill="x")
+        rows1 = [[("pill", letter), f"{minimum}+", f"{points:.1f}"]
+                 for letter, minimum, points in self.app.scale.table]
+        build_table(table1, ["Grade", "Min score", "Points"], rows1, [1, 1, 1])
+
+        right = make_card(grid)
+        right.grid(row=0, column=1, sticky="nsew")
+        right_in = tk.Frame(right, bg=WHITE, padx=24, pady=22)
+        right_in.pack(fill="both", expand=True)
+        tk.Label(right_in, text="GPA per Semester", font=font(14, True), bg=WHITE, fg=TEXT).pack(anchor="w", pady=(0, 14))
+        table2 = tk.Frame(right_in, bg=WHITE)
+        table2.pack(fill="x")
+        rows2 = [[f"Semester {r.number}", str(r.total_sks),
+                  f"{r.gpa:.2f}" if r.gpa is not None else "-",
+                  f"{r.cumulative_gpa:.2f}" if r.cumulative_gpa is not None else "-"]
+                 for r in self.student.semester_report()]
+        build_table(table2, ["Semester", "SKS", "GPA", "Cumulative GPA"], rows2, [2, 1, 1, 2])
