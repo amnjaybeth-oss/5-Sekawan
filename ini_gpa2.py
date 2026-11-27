@@ -936,4 +936,4 @@ class App(tk.Tk):
 
     def report_callback_exception(self, exc_type, exc_value, exc_tb):
         traceback.print_exception(exc_type, exc_value, exc_tb)
-        messagebox.showerror("Unexpected error", f"{exc_typ
+        messagebox.showerror("Unexpected error", f"{exc_type.__name__}: {exc_value}")
