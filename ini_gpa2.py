@@ -725,3 +725,26 @@ class PlannerPage(BasePage):
         self.detail = tk.Label(inner, text="", font=font(10), bg=WHITE, fg=MUTED,
                                wraplength=640, justify="left")
         self.detail.pack(anchor="w", pady=(2, 0))
+
+    def _calculate(self):
+        try:
+            current = Validator.number(self.e_current.get(), "Score so far", 0, 100)
+            weight = Validator.number(self.e_weight.get(), "Final exam weight", 1, 100)
+            target = self.cb_target.get()
+            if not target:
+                raise ValidationError("Please choose a target grade.")
+            plan = self.app.planner.plan(current, weight, target)
+        except ValueError as err:
+            self.result.config(text="", fg=TEXT)
+            self.detail.config(text=str(err), fg=DANGER)
+            return
+
+        if plan.outcome == "unreachable":
+            self.result.config(text=f"{plan.shown:.1f}", fg=DANGER)
+            self.detail.config(fg=MUTED, text=f"Not reachable: grade {plan.target} needs more than 100 on the final exam.")
+        elif plan.outcome == "secured":
+            self.result.config(text="Already secured", fg=SUCCESS)
+            self.detail.config(fg=MUTED, text=f"You already have enough for grade {plan.target}, even with a 0 on the final.")
+        else:
+            self.result.config(text=f"{plan.shown:.1f}", fg=BLUE)
+            self.detail.config(fg=MUTED, text=f"Score needed on the final exam to get {plan.target} (minimum total {plan.minimum}).")
