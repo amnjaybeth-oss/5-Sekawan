@@ -71,7 +71,7 @@ class Validator:
         Validator.check_range(number, field_name, minimum, maximum)
         return number
 
-    class GradeScale:
+class GradeScale:
     def __init__(self, table=GRADE_TABLE):
         self.table = list(table)
 
@@ -162,7 +162,7 @@ class CourseFactory:
         return course_class(name, sks, score, semester)
 
 
-        class Person:
+class Person:
     def __init__(self, name=None, npm=None):
         self.name = name
         self.npm = npm
@@ -170,7 +170,7 @@ class CourseFactory:
     def __str__(self):
         return self.name or "Student"
 
-        @CourseFactory.register
+@CourseFactory.register
 class Course:
     kind = "Regular"
     passing_score = 40
@@ -463,7 +463,7 @@ class ScrollFrame(tk.Frame):
 
     def _fit(self, event=None):
         self.canvas.itemconfig(self.window, width=self.canvas.winfo_width())
-        self.canvas.configure(scrol lregion=self.canvas.bbox("all"))
+        self.canvas.configure(scrollregion=self.canvas.bbox("all"))
 
     def _move(self, step):
         if not self.canvas.winfo_exists():
@@ -572,7 +572,7 @@ class CourseDialog(tk.Toplevel):
         self.grab_set()
         self.e_name.focus_set()
 
-        def _save(self):
+    def _save(self):
         try:
             name = Validator.text(self.e_name.get(), "Course name")
             sks = Validator.integer(self.e_sks.get(), "SKS", SKS_MIN, SKS_MAX)
@@ -938,33 +938,33 @@ class App(tk.Tk):
         traceback.print_exception(exc_type, exc_value, exc_tb)
         messagebox.showerror("Unexpected error", f"{exc_type.__name__}: {exc_value}")
 
-        def _clear_window(self):
-                for child in self.winfo_children():
-                    child.destroy()
-        
-            def show_login(self):
-                self._clear_window()
-                self.title("Student Login - GPA Planner")
-                LoginScreen(self, self).pack(fill="both", expand=True)
-        
-            def show_main(self, attempt):
-                self.student = self.auth.login(attempt)
-                self._clear_window()
-                self.title("GPA Planner")
-                self.shell = Shell(self, self)
-                self.shell.pack(fill="both", expand=True)
-        
-            def open_course_dialog(self, course=None):
-                def save(name, sks, score, semester, kind):
-                    new_course = CourseFactory.create(kind, name, sks, score, semester)
-                    if course is None:
-                        self.student.add_course(new_course)
-                    else:
-                        self.student.replace_course(course, new_course)
-                    self.shell.refresh()
-        
-                CourseDialog(self, save, course)
-        
-        
-        if __name__ == "__main__":
-            App().mainloop()
+    def _clear_window(self):
+        for child in self.winfo_children():
+            child.destroy()
+
+    def show_login(self):
+        self._clear_window()
+        self.title("Student Login - GPA Planner")
+        LoginScreen(self, self).pack(fill="both", expand=True)
+
+    def show_main(self, attempt):
+        self.student = self.auth.login(attempt)
+        self._clear_window()
+        self.title("GPA Planner")
+        self.shell = Shell(self, self)
+        self.shell.pack(fill="both", expand=True)
+
+    def open_course_dialog(self, course=None):
+        def save(name, sks, score, semester, kind):
+            new_course = CourseFactory.create(kind, name, sks, score, semester)
+            if course is None:
+                self.student.add_course(new_course)
+            else:
+                self.student.replace_course(course, new_course)
+            self.shell.refresh()
+
+        CourseDialog(self, save, course)
+
+
+if __name__ == "__main__":
+    App().mainloop()
