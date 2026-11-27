@@ -169,3 +169,83 @@ class CourseFactory:
 
     def __str__(self):
         return self.name or "Student"
+
+        @CourseFactory.register
+class Course:
+    kind = "Regular"
+    passing_score = 40
+    scale = GradeScale()
+
+    def __init__(self, name, sks, score, semester=1):
+        self.name = Validator.text(name, "Course name")
+        self.sks = sks
+        self.score = score
+        self.semester = semester
+
+    @property
+    def semester(self):
+        return self._semester
+
+    @semester.setter
+    def semester(self, value):
+        Validator.check_range(value, "Semester", SEM_MIN, SEM_MAX)
+        self._semester = value
+
+    @property
+    def sks(self):
+        return self._sks
+
+    @sks.setter
+    def sks(self, value):
+        Validator.check_range(value, "SKS", SKS_MIN, SKS_MAX)
+        self._sks = value
+
+    @property
+    def score(self):
+        return self._score
+
+    @score.setter
+    def score(self, value):
+        Validator.check_range(value, "Score", SCORE_MIN, SCORE_MAX)
+        self._score = value
+
+    @property
+    def letter(self):
+        return self.scale.score_to_grade(self.score)[0]
+
+    @property
+    def points(self):
+        return self.scale.score_to_grade(self.score)[1]
+
+    def status(self):
+        return "Passed" if self.score >= self.passing_score else self.failed_status()
+
+    def failed_status(self):
+        return "Retake"
+
+    def describe(self):
+        return f"{self.name} ({self.sks} SKS)"
+
+    def __str__(self):
+        return self.describe()
+
+@CourseFactory.register
+class ElectiveCourse(Course):
+    kind = "Elective"
+
+    def failed_status(self):
+        return "Replace with another elective"
+
+    def describe(self):
+        return f"{self.name} - elective, {self.sks} SKS (can be replaced if failed)"
+
+@CourseFactory.register
+class LabCourse(Course):
+    kind = "Lab"
+    passing_score = 60
+
+    def failed_status(self):
+        return f"Retake lab (needs {self.passing_score}+)"
+
+    def describe(self):
+        return f"{self.name} - lab/practicum, {self.sks} SKS (pass score {self.passing_score})"
