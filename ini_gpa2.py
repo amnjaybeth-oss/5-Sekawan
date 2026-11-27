@@ -583,3 +583,41 @@ class CourseDialog(tk.Toplevel):
             self.error.config(text=str(err))
             return
         self.destroy()
+
+class BasePage(tk.Frame):
+    def __init__(self, parent, app):
+        super().__init__(parent, bg=BG)
+        self.app = app
+
+    @property
+    def student(self):
+        return self.app.student
+
+    def refresh(self, keep_scroll=False):
+        position = 0.0
+        if keep_scroll and getattr(self, "scroll", None) is not None:
+            position = self.scroll.canvas.yview()[0]
+        for child in self.winfo_children():
+            child.destroy()
+        self.build()
+        if position:
+            self.after(30, lambda: self._restore_scroll(position))
+
+    def _restore_scroll(self, position):
+        if self.scroll.canvas.winfo_exists():
+            self.scroll.canvas.yview_moveto(position)
+
+    def build(self):
+        raise NotImplementedError
+
+    def container(self):
+        self.scroll = ScrollFrame(self)
+        self.scroll.pack(fill="both", expand=True)
+        box = tk.Frame(self.scroll.inner, bg=BG)
+        box.pack(fill="both", expand=True, padx=60, pady=30)
+        return box
+
+    def heading(self, parent, title, subtitle=""):
+        tk.Label(parent, text=title, font=font(24, True), bg=BG, fg=TEXT).pack(anchor="w")
+        if subtitle:
+            tk.Label(parent, text=subtitle, font=font(11), bg=BG, fg=MUTED).pack(anchor="w")
