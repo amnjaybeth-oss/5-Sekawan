@@ -934,6 +934,6 @@ class App(tk.Tk):
     def exit_fullscreen(self, event=None):
         self.attributes("-fullscreen", False)
 
-            def report_callback_exception(self, exc_type, exc_value, exc_tb):
+    def report_callback_exception(self, exc_type, exc_value, exc_tb):
         traceback.print_exception(exc_type, exc_value, exc_tb)
         messagebox.showerror("Unexpected error", f"{exc_typ
