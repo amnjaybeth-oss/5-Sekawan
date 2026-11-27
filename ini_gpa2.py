@@ -852,3 +852,84 @@ class Shell(tk.Frame):
 
     def refresh(self):
         self.pages[self.current].refresh(keep_scroll=True)
+
+class LoginScreen(tk.Frame):
+    def __init__(self, parent, app):
+        super().__init__(parent, bg=BG)
+        self.app = app
+
+        box = tk.Frame(self, bg=WHITE, padx=42, pady=36,
+                       highlightbackground=BORDER, highlightthickness=1)
+        box.place(relx=0.5, rely=0.5, anchor="center")
+
+        self.logo_img = load_logo(80)
+        if self.logo_img:
+            tk.Label(box, image=self.logo_img, bg=WHITE).pack(pady=(0, 14))
+
+        tk.Label(box, text="STUDENT LOGIN", font=font(22, True),
+                 bg=WHITE, fg=BLUE_DARK).pack(pady=(0, 8))
+        tk.Label(box, text="Enter your name and NPM to continue",
+                 font=font(10), bg=WHITE, fg=MUTED).pack(pady=(0, 22))
+
+        self.e_nama = add_field(box, "Full name", width=32)
+        self.e_npm = add_field(box, f"NPM ({AuthService.NPM_LENGTH} digits)", width=32)
+
+        self.error = tk.Label(box, text="", font=font(9), bg=WHITE,
+                              fg=DANGER, wraplength=300, justify="left")
+        self.error.pack(anchor="w", pady=(10, 0))
+
+        FlatButton(box, "Login", self.proses_login).pack(fill="x", pady=(18, 0))
+
+        self.e_nama.bind("<Return>", lambda e: self.proses_login())
+        self.e_npm.bind("<Return>", lambda e: self.proses_login())
+        self.e_nama.focus_set()
+
+    def proses_login(self):
+        try:
+            attempt = self.app.auth.check(self.e_nama.get(), self.e_npm.get())
+        except (ValueError, AuthError) as err:
+            self.error.config(text=str(err))
+            return
+        if attempt.needs_confirmation and not messagebox.askyesno(
+                "Confirm NPM",
+                "This name is already registered with a different NPM. "
+                "Is the NPM you entered correct?"):
+            return
+        self.app.show_main(attempt)
+
+class App(tk.Tk):
+    def __init__(self):
+        super().__init__()
+        self.title("Student Login - GPA Planner")
+        self.geometry("1100x760")
+        self.minsize(900, 640)
+        self.configure(bg=BG)
+
+        self._icon = load_logo(64)
+        if self._icon:
+            try:
+                self.iconphoto(True, self._icon)
+            except tk.TclError:
+                pass  
+
+        self.student = None
+        self.shell = None
+        self.scale = Course.scale
+        self.planner = FinalExamPlanner(self.scale)
+        self.repository = StudentRepository()
+        self.auth = AuthService(self.repository)
+
+        try:
+            ttk.Style().theme_use("clam")
+        except tk.TclError:
+            pass
+
+        self.bind("<F11>", self.toggle_fullscreen)
+        self.bind("<Escape>", self.exit_fullscreen)
+        self.show_login()
+
+    def toggle_fullscreen(self, event=None):
+        self.attributes("-fullscreen", not self.attributes("-fullscreen"))
+
+    def exit_fullscreen(self, event=None):
+        self.attributes("-fullscreen", False)
