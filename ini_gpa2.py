@@ -388,3 +388,41 @@ class AuthService:
 
     def login(self, attempt):
         return self._repo.get_or_create(attempt.name, attempt.npm)
+
+BG = "#F5F7FB"
+WHITE = "#FFFFFF"
+BLUE = "#1D4ED8"
+BLUE_HOVER = "#1E40AF"
+BLUE_SOFT = "#E0E7FF"
+BLUE_DARK = "#1E3A8A"
+TEXT = "#1E293B"
+MUTED = "#64748B"
+BORDER = "#E2E8F0"
+PILL_GRAY = "#EEF1F6"
+DANGER = "#DC2626"
+SUCCESS = "#15803D"
+FAMILY = "Segoe UI"
+
+LOGO_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "logo.png")
+
+def font(size, bold=False):
+    return (FAMILY, size, "bold" if bold else "normal")
+
+def load_logo(size):
+    """Load logo.png (same folder as this script) resized to size x size.
+    Returns None if the file is missing or cannot be loaded."""
+    if not os.path.exists(LOGO_PATH):
+        return None
+    try:
+        from PIL import Image, ImageTk
+        img = Image.open(LOGO_PATH).convert("RGBA")
+        img = img.crop(img.getbbox()).resize((size, size), Image.LANCZOS)
+        return ImageTk.PhotoImage(img)
+    except ImportError:
+        try:
+            img = tk.PhotoImage(file=LOGO_PATH)
+            return img.subsample(max(1, round(img.width() / size)))
+        except tk.TclError:
+            return None
+    except Exception:
+        return None
